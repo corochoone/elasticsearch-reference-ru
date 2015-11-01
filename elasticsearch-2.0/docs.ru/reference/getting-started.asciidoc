@@ -1,107 +1,108 @@
 [[getting-started]]
-= Getting Started
+= Первые шаги
 
 [partintro]
 --
 
-Elasticsearch is a highly scalable open-source full-text search and analytics engine. It allows you to store, search, and analyze big volumes of data quickly and in near real time. It is generally used as the underlying engine/technology that powers applications that have complex search features and requirements.
+Elasticsearch - это высокомасштабируемый движок для полнотекстового поиска и аналитики, поставляемый с открытыми исходными кодами. Он позволяет хранить, искать и анализировать большие объёмы данных быстро и почти в реальном времени. Обычно он используется как базовый движок/технология, для приложений, которые имеют сложные особенности поиска и требования к поиску.
 
-Here are a few sample use-cases that Elasticsearch could be used for:
+Здесь перечислены некоторые случаи, в которых может быть использован Elasticsearch:
 
-* You run an online web store where you allow your customers to search for products that you sell. In this case, you can use Elasticsearch to store your entire product catalog and inventory and provide search and autocomplete suggestions for them.
-* You want to collect log or transaction data and you want to analyze and mine this data to look for trends, statistics, summarizations, or anomalies. In this case, you can use Logstash (part of the Elasticsearch/Logstash/Kibana stack) to collect, aggregate, and parse your data, and then have Logstash feed this data into Elasticsearch. Once the data is in Elasticsearch, you can run searches and aggregations to mine any information that is of interest to you.
-* You run a price alerting platform which allows price-savvy customers to specify a rule like "I am interested in buying a specific electronic gadget and I want to be notified if the price of gadget falls below $X from any vendor within the next month". In this case you can scrape vendor prices, push them into Elasticsearch and use its reverse-search (Percolator) capability to match price movements against customer queries and eventually push the alerts out to the customer once matches are found.
-* You have analytics/business-intelligence needs and want to quickly investigate, analyze, visualize, and ask ad-hoc questions on a lot of data (think millions or billions of records). In this case, you can use Elasticsearch to store your data and then use Kibana (part of the Elasticsearch/Logstash/Kibana stack) to build custom dashboards that can visualize aspects of your data that are important to you. Additionally, you can use the Elasticsearch aggregations functionality to perform complex business intelligence queries against your data.
+* Вы запускаете онлайновый веб-магазин, где вы разрешаете вашим клиентам искать продукты, которые вы продаёте. В этом случае, вы можете использовать Elasticsearch для хранения вашего полного каталога товаров, а также инвентаризировать его и предоставлять поиск и автозаполнение подсказок для них.
+* Вы хотите хранить лог или данные транзакций и анализировать и извлекать эти данные для просмотра тенденций, статистики, итогов или аномалий. В этом случае вы можете использовать Logstash (часть стека Elasticsearch/Logstash/Kibana) для сбора, агрегации и разбора ваших данных, а затем создать Logstash-ленту этих данных в Elasticsearch. После того как однажды вы поместили эти данные в Elasticsearch, вы сможете запускать поисковые запросы и агрегации для извлечения любой информации, которая вам интересна.
+* Вы запускаете платформу оповещения о ценах, которая позволяет подкованным в ценах клиентам задать правило типа "Мне интересна продажа конкретного электронного гаджета и я хочу получить извещение, если цена этого гаджета упадёт в течение следующего месяца ниже $X у любого из поставщиков". В этом случае вы можете собрать цены поставщиков, разместить их в Elasticsearch и использовать его возможность обратного поиска (Percolator) для того, чтобы найти изменения цен согласно запросам клиентов, а также сгенерировать уведомление клиенту при нахождении совпадений.
+*  У вас есть потребности в аналитике/бизнес-аналитике и вы хотите быстро исследовать, проанализировать, визуализировать и задать нерегламентированные вопросы для большого объёма данных (миллионы или миллиарды записей). В этом случае вы можете использовать Elasticsearch для хранения ваших данных и затем использовать Kibana (часть стека Elasticsearch/Logstash/Kibana) для построения собственных панелей инструментов, которые могут визуализировать аспекты ваших данных, являющиеся важными для вас. В дополнение, вы можете использовать функционал агрегирования Elasticsearch для выполнения сложных запросов бизнес-аналитики на ваших данных.
 
-For the rest of this tutorial, I will guide you through the process of getting Elasticsearch up and running, taking a peek inside it, and performing basic operations like indexing, searching, and modifying your data. At the end of this tutorial, you should have a good idea of what Elasticsearch is, how it works, and hopefully be inspired to see how you can use it to either build sophisticated search applications or to mine intelligence from your data.
+В оставшейся части этого учебника я проведу вас через процесс получения и запуска Elasticsearch, мы заглянем внутрь и научимся выполнять базовые операции, такие как индексирование, поиск и изменение ваших данных. В конце этого учебника у вас должно появиться понимание того, что такое Elasticsearch, как он работает, и надеемся, что вы увидите, как его можно использовать для построения сложных поисковых приложений или для извлечения аналитики из ваших данных.
 --
 
-== Basic Concepts
+[[_basic_concepts]]
+== Базовые понятия
 
-There are a few concepts that are core to Elasticsearch. Understanding these concepts from the outset will tremendously help ease the learning process.
-
-[float]
-=== Near Realtime (NRT)
-
-Elasticsearch is a near real time search platform. What this means is there is a slight latency (normally one second) from the time you index a document until the time it becomes searchable.
+Ниже приведены несколько понятий, которые являются ключевыми для Elasticsearch. Их понимание с самого начала, сильно поможет упростить процесс обучения.
 
 [float]
-=== Cluster
+=== Почти реальное время (NRT)
 
-A cluster is a collection of one or more nodes (servers) that together holds your entire data and provides federated indexing and search capabilities across all nodes. A cluster is identified by a unique name which by default is "elasticsearch". This name is important because a node can only be part of a cluster if the node is set up to join the cluster by its name.
-
-Make sure that you don't reuse the same cluster names in different
-environments, otherwise you might end up with nodes joining the wrong cluster.
-For instance you could use `logging-dev`, `logging-stage`, and `logging-prod`
-for the development, staging, and production clusters.
-
-Note that it is valid and perfectly fine to have a cluster with only a single node in it. Furthermore, you may also have multiple independent clusters each with its own unique cluster name.
+ElasticSearch является NRT поисковой платформой. Что означает очень малое время отклика (обычно одна секунда) от момента, когда вы проиндексировали документ, до момента, когда он становится доступным к поиску.
 
 [float]
-=== Node
+=== Кластер (cluster)
 
-A node is a single server that is part of your cluster, stores your data, and participates in the cluster's indexing and search capabilities. Just like a cluster, a node is identified by a name which by default is a random Marvel character name that is assigned to the node at startup. You can define any node name you want if you do not want the default.  This name is important for administration purposes where you want to identify which servers in your network correspond to which nodes in your Elasticsearch cluster.
+Кластер - это коллекция из одного или более серверов, называемых "узел" (node), которые вместе хранят весь объём данных и предоставляют возможности индексирования и поиска прозрачно с использованием всех узлов. Кластер идентифицируется уникальным именем по умолчанию "elasticsearch". Имя важно, посколько узел может быть частью кластера, только если эта нода настроена на присоединение к кластеру по его имени.
 
-A node can be configured to join a specific cluster by the cluster name. By default, each node is set up to join a cluster named `elasticsearch` which means that if you start up a number of nodes on your network and--assuming they can discover each other--they will all automatically form and join a single cluster named `elasticsearch`.
+Убедитесь, что вы не используете одинаковые имена кластера в разных окружениях, в противном
+случае, вы можете в конечном итоге подключить ноды не к тому кластеру. Например, вы можете
+использовать `loggin-dev`, `loggin-stage` и `loggin-prod` для кластеров, которые используются
+соответственно для целей разработки, постановки и продуктива.
 
-In a single cluster, you can have as many nodes as you want. Furthermore, if there are no other Elasticsearch nodes currently running on your network, starting a single node will by default form a new single-node cluster named `elasticsearch`.
+Обратите внимание, что это правильно и даже превосходно иметь кластер с только одним узлом в нём. Однако, вы можете также иметь несколько независимых кластеров, каждый из которых будет иметь уникальное имя.
+
+[float]
+=== Узел (node)
+
+Узел - это одиночный сервер, который является частью вашего кластера и предоставляет возможности индексирования и поиска. Как и кластер, узел идентифицируется именем, которое по умолчанию выбирается по случайному алгоритму Marvel для символьных имён и присваивается узлу при его запуске. Вы можете задать любое имя узла, которое вы хотите, если вас не устраивает умолчание. Имя важно для административных целей, чтобы идентифицировать какой сервер в сети является каким узлом кластера Elasticsearch.
+
+Узел можно сконфигурировать на присоединение к заданному кластеру по имени кластера. По умолчанию, каждый узел присоединяется к кластеру с именем `elasticsearch`, т.е. если вы запустите несколько узлов в вашей сети с настройками по умолчанию, они автоматически сформируют один кластер с именем `elasticsearch`.
+
+Кластер может включать произвольное количество узлов. Однако, если у вас нет других узлов Elasticsearch в этой же сети, запуск одного узла по умолчанию создаст кластер с именем `elasticsearch` из одного узла, куда и будет присоединён этот узел.
 
 [sect2]
 [float]
-=== Index
+=== Индекс (index)
 
-An index is a collection of documents that have somewhat similar characteristics. For example, you can have an index for customer data, another index for a product catalog, and yet another index for order data. An index is identified by a name (that must be all lowercase) and this name is used to refer to the index when performing indexing, search, update, and delete operations against the documents in it.
+Индекс - это коллекция документов, которые имеют некие похожие характеристики. Например, у вас может быть один индекс с данными о клиентах, другой индекс с каталогом товаров, а также ещё индекс с данными заказов. Индекс идентифицируется по имени (которое должно быть в нижнем регистре) и это имя используется как ссылка на этот индекс при выполнении операций индексирования, поиска, обновления и удаления документов, содержащихся в индексе.
 
-In a single cluster, you can define as many indexes as you want.
-
-[float]
-=== Type
-
-Within an index, you can define one or more types. A type is a logical category/partition of your index whose semantics is completely up to you. In general, a type is defined for documents that have a set of common fields. For example, let's assume you run a blogging platform and store all your data in a single index. In this index, you may define a type for user data, another type for blog data, and yet another type for comments data.
+В одном кластере, вы можете создать произвольное количество индексов.
 
 [float]
-=== Document
+=== Тип (type)
 
-A document is a basic unit of information that can be indexed. For example, you can have a document for a single customer, another document for a single product, and yet another for a single order. This document is expressed in http://json.org/[JSON] (JavaScript Object Notation) which is an ubiquitous internet data interchange format.
-
-Within an index/type, you can store as many documents as you want. Note that although a document physically resides in an index, a document actually must be indexed/assigned to a type inside an index.
+Внутри индекса, вы можете определить один или несколько типов. Тип - это логическая категория/часть вашего индекса, смысл которого полностью зависит от вас. Обычно, тип определяется для документов, которые имеют много общих полей. Например, пусть у вас есть блог и все ваши данные хранятся в одном индексе. В этом индексе вы можете определить один тип для данных пользователя, другой тип для данных блога и ещё тип для комментариев.
 
 [float]
-=== Shards & Replicas
+=== Документ (document)
 
-An index can potentially store a large amount of data that can exceed the hardware limits of a single node. For example, a single index of a billion documents taking up 1TB of disk space may not fit on the disk of a single node or may be too slow to serve search requests from a single node alone.
+Это базовый элемент информации, которая может быть проиндексирована. Например, у вас может быть один документ для одного клиента, другой документ для одного товара и ещё для одного заказа. Документ составляется в виде выражения http://json.org/[JSON] (JavaScript Object Notation), который повсеместно используется в Интернет для обмена информацией.
 
-To solve this problem, Elasticsearch provides the ability to subdivide your index into multiple pieces called shards. When you create an index, you can simply define the number of shards that you want. Each shard is in itself a fully-functional and independent "index" that can be hosted on any node in the cluster.
+Вместе c каким-либо индексом/типом, вы можете хранить произвольное количество документов. Обратите внимание, что хотя документ физически находится в индексе, документ фактически должен быть индексирован/назначен для какого-либо типа внутри индекса.
 
-Sharding is important for two primary reasons:
+TIP: Если вы знакомы с SQL базами данных, то, возможно, вам будет проще понять что такое индекс, тип и документ, если сказать, что индекс - это аналог базы данных, тип - аналог таблицы, а документ - аналог записи в таблице (строки). (прим. переводчика)
 
-* It allows you to horizontally split/scale your content volume
-* It allows you to distribute and parallelize operations across shards (potentially on multiple nodes) thus increasing performance/throughput
+[float]
+=== Шарды (shards) и Реплики (replicas)
 
+Индекс потенциально может хранить большое количество данных, которое может превышать аппаратные ограничения на одном узле. Например, один индекс одного миллиарда документов может занимать свыше 1TB места на диске, что может не поместится на диск одного узла или может быть слишком медленным для обслуживания поисковых запросов на одном узле.
 
-The mechanics of how a shard is distributed and also how its documents are aggregated back into search requests are completely managed by Elasticsearch and is transparent to you as the user.
+Чтобы решить эту проблему, Elasticsearch предоставляет возможность разделения вашего индекса на несколько частей, которые называются шардами. Когда вы создаёте индекс, вы можете просто задать необходимое вам количество шардов. Каждый шард является самодостаточным и полнофункциональным независимым "индексом", который может размещаться на любом узле кластера.
 
-In a network/cloud environment where failures can be expected anytime, it is very useful and highly recommended to have a failover mechanism in case a shard/node somehow goes offline or disappears for whatever reason. To this end, Elasticsearch allows you to make one or more copies of your index's shards into what are called replica shards, or replicas for short.
+Шардинг является важным по двум основным причинам:
 
-Replication is important for two primary reasons:
+* Он позволяет вам горизонтальное разбиение/масштабирование тома ваших данных
+* Он позволяет вам распределять и выполнять параллельно операции с шардами (потенциально на нескольких узлах) что увеличивает производительность/пропускную способность
 
-* It provides high availability in case a shard/node fails. For this reason, it is important to note that a replica shard is never allocated on the same node as the original/primary shard that it was copied from.
-* It allows you to scale out your search volume/throughput since searches can be executed on all replicas in parallel.
+Механика распределения операций по шардам а также обратная агрегация находящихся в них документов в результаты поиска, полностью управляется Elasticsearch и прозрачна для пользователя.
 
+В сетевом/облачном окружении, где отказ может произойти в любое время, очень полезно и очень рекомендуется иметь механизм отказоустойчивости в случае, когда какой-либо шард/узел становится недоступным по какой-либо причине. В заключение, Elasticsearch позволяет вам сделать одну или более копий шардов вашего индекса, которые называются репликами шардов или для краткости просто репликами.
 
-To summarize, each index can be split into multiple shards. An index can also be replicated zero (meaning no replicas) or more times. Once replicated, each index will have primary shards (the original shards that were replicated from) and replica shards (the copies of the primary shards).
-The number of shards and replicas can be defined per index at the time the index is created. After the index is created, you may change the number of replicas dynamically anytime but you cannot change the number shards after-the-fact.
+Репликация важна по двум основным причинам:
 
-By default, each index in Elasticsearch is allocated 5 primary shards and 1 replica which means that if you have at least two nodes in your cluster, your index will have 5 primary shards and another 5 replica shards (1 complete replica) for a total of 10 shards per index.
+* Она предоставляет высокую доступность в случае отказа какого-либо шарда/узла. По этой причине, важно, чтобы реплика шарда никогда не размещалась на том же самом узле, где находится оригинальный/первичный шард, с которого делалась копия.
+* Она позволяет вам масштабировать пропускную способность вашего поиска, поскольку поиск может быть запущен на всех репликах параллельно.
 
-NOTE: Each Elasticsearch shard is a Lucene index.  There is a maximum number of documents you can have in a single Lucene index.  As of https://issues.apache.org/jira/browse/LUCENE-5843[`LUCENE-5843`], the limit is `2,147,483,519` (= Integer.MAX_VALUE - 128) documents.
-You can monitor shard sizes using the <<cat-shards,`_cat/shards`>> api.
+В качестве итога, каждый индекс может быть разбит на несколько шардов. Индекс может также быть реплицирован ноль (означает не реплицирован) или более раз. Однажды реплицированный, каждый индекс будет иметь первичные шарды (оригинальные шарды, с которых осуществлялась репликация) и реплики шардов (копии первичных шардов).
+Количество шардов и реплик может быть задано для индекса в момент его создания. После того как индекс создан, вы можете изменить количество реплик динамически в любое время, но количество шардов постфактум изменить не можете.
 
-With that out of the way, let's get started with the fun part...
+По умолчанию, под каждый индекс в Elasticsearch выделятся 5 первичных шардов и 1 реплика, что означает, что если у вас как минимум два узла в кластере, ваш индекс имеет 5 первичных шардов и другие 5 реплик шардов (1 полная реплика) т.е. всего 10 шардов на индекс.
 
-== Installation
+NOTE: Каждый шард в Elasticsearch является индексом Lucene. Существует ограничение на максимальное количество документов, которые вы можете разместить в одном индексе Lucene. Согласно https://issues.apache.org/jira/browse/LUCENE-5843[`LUCENE-5843`], это ограничение составляет 2,147,483,519 (= Integer.MAX_VALUE - 128) документов. Вы можете мониторить размеры шардов, используя <<cat-shards,`_cat/shards`>> api.
 
-Elasticsearch requires at least Java 7. Specifically as of this writing, it is recommended that you use the Oracle JDK version {jdk}. Java installation varies from platform to platform so we won't go into those details here. Oracle's recommended installation documentation can be found on http://docs.oracle.com/javase/8/docs/technotes/guides/install/install_overview.html[Oracle's website]. Suffice to say, before you install Elasticsearch, please check your Java version first by running (and then install/upgrade accordingly if needed):
+Теперь давайте начнём, с чего-либо интересного...
+
+[[_installation]]
+== Установка
+
+Elasticsearch требует Java 7. В частности, рекомендуется, чтобы вы использовали Oracle JDK {jdk}. Установка Java различается от платформы к платформе, так что мы не можем описать её здесь подробно. Рекомендованную Oracle документацию по установке можно найти http://docs.oracle.com/javase/8/docs/technotes/guides/install/install_overview.html[на сайте Oracle]. Перед установкой Elasticsearch, пожалуйста, сперва проверьте вашу версию Java (и затем установите/обновите, если нужно):
 
 [source,sh]
 --------------------------------------------------
@@ -109,37 +110,37 @@ java -version
 echo $JAVA_HOME
 --------------------------------------------------
 
-Once we have Java set up, we can then download and run Elasticsearch. The binaries are available from http://www.elastic.co/downloads[`www.elastic.co/downloads`] along with all the releases that have been made in the past. For each release, you have a choice among a `zip` or `tar` archive, or a `DEB` or `RPM` package. For simplicity, let's use the tar file.
+После того как вы установили Java, вы можете загрузить и запустить Elasticsearch. Последние релизы Elasticsearch в бинарном виде доступны на странице http://www.elastic.co/downloads[`www.elastic.co/downloads`], включая все версии, выпущенные в прошлом. Для каждого релиза вы можете выбрать формат архива `zip`, `tar`, `DEB` или `RPM` пакет. Для простоты, пусть мы будем использовать tar архив.
 
-Let's download the Elasticsearch {version} tar as follows (Windows users should download the zip package):
+Скачайте Elasticsearch {version} в tar формате следующим образом (Пользователи Windows должны, по идее, скачивать zip архив):
 
 ["source","sh",subs="attributes,callouts"]
 --------------------------------------------------
 curl -L -O https://download.elastic.co/elasticsearch/elasticsearch/elasticsearch-{version}.tar.gz
 --------------------------------------------------
 
-Then extract it as follows (Windows users should unzip the zip package):
+Затем распакуйте архив (пользователи Windows должны использовать для zip архива unzip):
 
 ["source","sh",subs="attributes,callouts"]
 --------------------------------------------------
 tar -xvf elasticsearch-{version}.tar.gz
 --------------------------------------------------
 
-It will then create a bunch of files and folders in your current directory. We then go into the bin directory as follows:
+Команда создаст файлы и подкаталоги в вашем текущем каталоге. Затем перейдите в подкаталог bin:
 
 ["source","sh",subs="attributes,callouts"]
 --------------------------------------------------
 cd elasticsearch-{version}/bin
 --------------------------------------------------
 
-And now we are ready to start our node and single cluster (Windows users should run the elasticsearch.bat file):
+И теперь мы готовы запустить наш узел и кластер (пользователи Windows должны запустить файл elasticsearch.bat):
 
 [source,sh]
 --------------------------------------------------
 ./elasticsearch
 --------------------------------------------------
 
-If everything goes well, you should see a bunch of messages that look like below:
+Если всё пошло хорошо, мы должны увидеть пачку сообщений, которые выглядят примерно так:
 
 ["source","sh",subs="attributes,callouts"]
 --------------------------------------------------
@@ -157,41 +158,44 @@ If everything goes well, you should see a bunch of messages that look like below
 [2014-03-13 13:42:23,630][INFO ][node           ] [New Goblin] started
 --------------------------------------------------
 
-Without going too much into detail, we can see that our node named "New Goblin" (which will be a different Marvel character in your case) has started and elected itself as a master in a single cluster. Don't worry yet at the moment what master means. The main thing that is important here is that we have started one node within one cluster.
+Не вдаваясь в подробности, мы можем увидеть, что наш узел с именем "New Goblin" (который будет в нашем случае другим персонажем Marvel) запустился и выбрал себя как master в одиночном кластере. Не беспокойтесь пока о том, что означает "master". Основная вещь, которая сейчас важна - это то, что мы запустили один узел внутри одного кластера.
 
-As mentioned previously, we can override either the cluster or node name. This can be done from the command line when starting Elasticsearch as follows:
+Как говорилось ранее, мы можем перекрыть либо имя кластера, либо имя узла. Это можно выполнить из командной строки, при запуске Elasticsearch:
 
 [source,sh]
 --------------------------------------------------
 ./elasticsearch --cluster.name my_cluster_name --node.name my_node_name
 --------------------------------------------------
 
-Also note the line marked http with information about the HTTP address (`192.168.8.112`) and port (`9200`) that our node is reachable from. By default, Elasticsearch uses port `9200` to provide access to its REST API. This port is configurable if necessary.
+Также обратите внимание на строку, где есть слово http с информацией об адресе HTTP (`192.168.8.112`) и порте (`9200`), которые будет использовать наш узел. По умолчанию, Elasticsearch использует для предоставления доступа к своему внутреннему REST API порт `9200`. Данный порт можно настроить, если это необходимо.
 
-== Exploring Your Cluster
+[[_exploring_your_cluster]]
+== Исследование вашего кластера
 
 [float]
-=== The REST API
+=== REST API
 
-Now that we have our node (and cluster) up and running, the next step is to understand how to communicate with it. Fortunately, Elasticsearch provides a very comprehensive and powerful REST API that you can use to interact with your cluster. Among the few things that can be done with the API are as follows:
+Теперь, когда вы запустили узел (и кластер), следующий шаг состоит в понимании того как вы будете взаимодействовать с ним. К счастью, Elasticsearch предоставляет очень понятный и мощный REST API, который вы можете использовать для работы с вашим кластером. Среди прочих вещей, которые можно выполнять с помощью данного API есть следующие:
 
-* Check your cluster, node, and index health, status, and statistics
-* Administer your cluster, node, and index data and metadata
-* Perform CRUD (Create, Read, Update, and Delete) and search operations against your indexes
-* Execute advanced search operations such as paging, sorting, filtering, scripting, aggregations, and many others
+* Проверять работоспособность вашего кластера, узела и индекса, смотреть их состояние и статистику
+* Управлять вашим кластером, узлом и данными индекса и метаданными
+* Выполнять операции CRUD (Create, Read, Update, and Delete) - (Создание, Чтение, Обновление и Удаление) и операции поиска для ваших индкесов
+* Выполнять расширенные поисковые операции, такие как пейджинг (постраничный результат), сортировка, фильтрация, скриптинг, агрегация и многое другое.
 
-=== Cluster Health
 
-Let's start with a basic health check, which we can use to see how our cluster is doing. We'll be using curl to do this but you can use any tool that allows you to make HTTP/REST calls. Let's assume that we are still on the same node where we started Elasticsearch on and open another command shell window.
+[[_cluster_health]]
+=== Работоспобность кластера
 
-To check the cluster health, we will be using the <<cat,`_cat` API>>. Remember previously that our node HTTP endpoint is available at port `9200`:
+Начнём с базовой проверки работоспособности, которую мы можем использовать для того, чтобы увидеть, что делает кластер. Мы будем использовать curl, чтобы сделать это, но вы можете использовать любой инструмент, который позволит вам выполнять HTTP/REST запросы. Будем считать, что мы находимся на том же узле, где мы запустили Elasticsearch и откроем новое окно с командной строкой.
+
+Чтобы проверить работоспособность кластера, мы будет использовать <<cat,`_cat` API>>. Сперва запомните, что точка доступа к наш узлу через HTTP находится на порту `9200`:
 
 [source,sh]
 --------------------------------------------------
 curl 'localhost:9200/_cat/health?v'
 --------------------------------------------------
 
-And the response:
+ответ:
 
 [source,sh]
 --------------------------------------------------
@@ -199,20 +203,20 @@ epoch      timestamp cluster       status node.total node.data shards pri relo i
 1394735289 14:28:09  elasticsearch green           1         1      0   0    0    0        0
 --------------------------------------------------
 
-We can see that our cluster named "elasticsearch" is up with a green status.
+Вы можете увидеть, что наш кластер с именем "elasticsearch" работает и имеет статус green.
 
-Whenever we ask for the cluster health, we either get green, yellow, or red. Green means everything is good (cluster is fully functional), yellow means all data is available but some replicas are not yet allocated (cluster is fully functional), and red means some data is not available for whatever reason. Note that even if a cluster is red, it still is partially functional (i.e. it will continue to serve search requests from the available shards) but you will likely need to fix it ASAP since you have missing data.
+Когда бы мы не проверили работоспособность кластера, мы получим либо green либо yellow либо red. Green (зелёный) означает что всё хорошо (кластер полностью работоспособен), yellow (жёлтый) означает, что все данные доступны, но некоторые реплики ещё не размещены (кластер полностью функционален) и red (красный) означает, что некоторые данные недоступны по какой-либо причине. Обратите внимание, что даже если кластер находится в состоянии red, он продолжает частично работать (т.е. будет продолжать обслуживать поисковые запросы для доступных шардов), но вам будет необходимо починить их как можно скорее, поскольку у вас есть потерянные данные.
 
-Also from the above response, we can see and total of 1 node and that we have 0 shards since we have no data in it yet. Note that since we are using the default cluster name (elasticsearch) and since Elasticsearch uses unicast network discovery by default to find other nodes on the same machine, it is possible that you could accidentally start up more than one node on your computer and have them all join a single cluster. In this scenario, you may see more than 1 node in the above response.
+Также из вышеприведённого ответа, мы можем увидеть общее количество узлов в кластере (total) 1 и что у нас 0 шардов (поле shards), поскольку у нас ещё нет никаких данных. Обратите внимание, что мы используем имя кластера по умолчанию (elasticsearch) и так как Elasticsearch использует обнаружение других узлов в сети через unicast запросы, то вполне возможно, что вы могли случайно запустить более чем один узел в вашей сети и они все присоедились к одному кластеру. В этом случае, вы можете увидеть в вышеприведённом ответе более чем 1 узел.
 
-We can also get a list of nodes in our cluster as follows:
+Мы можем также получить список узлов кластера с помощью запроса:
 
 [source,sh]
 --------------------------------------------------
 curl 'localhost:9200/_cat/nodes?v'
 --------------------------------------------------
 
-And the response:
+ответ:
 
 [source,sh]
 --------------------------------------------------
@@ -221,18 +225,19 @@ host         ip        heap.percent ram.percent load node.role master name
 mwubuntu1    127.0.1.1            8           4 0.00 d         *      New Goblin
 --------------------------------------------------
 
-Here, we can see our one node named "New Goblin", which is the single node that is currently in our cluster.
+Здесь мы можем увидеть один наш узел с именем "New Goblin", который является единственным узлом, который в настоящий момент находится в вашем кластере.
 
-=== List All Indices
+[[_list_all_indices]]
+=== Список всех индексов
 
-Now let's take a peek at our indices:
+Теперь мы получим список наших индексов:
 
 [source,sh]
 --------------------------------------------------
 curl 'localhost:9200/_cat/indices?v'
 --------------------------------------------------
 
-And the response:
+ответ:
 
 [source,sh]
 --------------------------------------------------
@@ -240,11 +245,12 @@ curl 'localhost:9200/_cat/indices?v'
 health index pri rep docs.count docs.deleted store.size pri.store.size
 --------------------------------------------------
 
-Which simply means we have no indices yet in the cluster.
+Означает, просто что у нас пока нет индексов в кластере.
 
-=== Create an Index
+[[_create_an_index]]
+=== Создание индекса
 
-Now let's create an index named "customer" and then list all the indexes again:
+Теперь мы создадим индекс с именем "customer" и затем снова выведем список всех индексов:
 
 [source,sh]
 --------------------------------------------------
@@ -252,9 +258,9 @@ curl -XPUT 'localhost:9200/customer?pretty'
 curl 'localhost:9200/_cat/indices?v'
 --------------------------------------------------
 
-The first command creates the index named "customer" using the PUT verb. We simply append `pretty` to the end of the call to tell it to pretty-print the JSON response (if any).
+Первая команда создаёт индекс с именем "customer", используя действие PUT. Мы просто добавляем `pretty` к концу вызова, чтобы сказать о том, что JSON ответ нужно выдать в красивом виде (если надо).
 
-And the response:
+ответ:
 
 [source,sh]
 --------------------------------------------------
@@ -268,17 +274,19 @@ health index    pri rep docs.count docs.deleted store.size pri.store.size
 yellow customer   5   1          0            0       495b           495b
 --------------------------------------------------
 
-The results of the second command tells us that we now have 1 index named customer and it has 5 primary shards and 1 replica (the defaults) and it contains 0 documents in it.
+Результаты второй команды говорят нам, что у нас теперь есть 1 индекс с именем customer и он имеет 5 первичных шардов и 1 репику (по умолчанию) а также, что он содержит 0 документов.
 
-You might also notice that the customer index has a yellow health tagged to it. Recall from our previous discussion that yellow means that some replicas are not (yet) allocated. The reason this happens for this index is because Elasticsearch by default created one replica for this index. Since we only have one node running at the moment, that one replica cannot yet be allocated (for high availability) until a later point in time when another node joins the cluster. Once that replica gets allocated onto a second node, the health status for this index will turn to green.
+Вы также можете обратить внимание, что индекс customer находится в состоянии yellow. Возвращаясь к написанному ранее, это означает, что некоторые реплики (ещё) не размещены. Причина заключается в том, что для этого индекса, Elasticsearch по умолчанию создал одну реплику на индекс. Поскольку у нас, в данный момент, запущен только один узел, то эта реплика не может быть пока размещена (для высокой доступности) до тех пор, пока в дальнейшем к кластеру не присоединится ещё один узел. Как только эта реплика разместится на втором узле, статус для этого индекса станет зелёным.
 
-=== Index and Query a Document
 
-Let's now put something into our customer index. Remember previously that in order to index a document, we must tell Elasticsearch which type in the index it should go to.
+[[_index_and_query_a_document]]
+=== Индексирование и запрос документа
 
-Let's index a simple customer document into the customer index, "external" type, with an ID of 1 as follows:
+Теперь мы что-либо поместим в наш индекс customer. Сперва запомните, что для индексирования документа, вы должны сказать Elasticsearch, какой тип должен быть в индексе.
 
-Our JSON document: { "name": "John Doe" }
+Пусть индексируется простой customer документ, помещаемый в индекс customer, имеющий тип "external", с ID имеющим значение 1:
+
+Наш JSON документ: { "name": "John Doe" }
 
 [source,sh]
 --------------------------------------------------
@@ -288,7 +296,7 @@ curl -XPUT 'localhost:9200/customer/external/1?pretty' -d '
 }'
 --------------------------------------------------
 
-And the response:
+ответ:
 
 [source,sh]
 --------------------------------------------------
@@ -305,18 +313,18 @@ curl -XPUT 'localhost:9200/customer/external/1?pretty' -d '
 }
 --------------------------------------------------
 
-From the above, we can see that a new customer document was successfully created inside the customer index and the external type. The document also has an internal id of 1 which we specified at index time.
+Из вышеприведённого, мы можем увидеть, что новый документ был успешно создан внутри индекса customer с типом external. Документ также имеет внутренний id со значением 1, которое мы указали в момент индексирования.
 
-It is important to note that Elasticsearch does not require you to explicitly create an index first before you can index documents into it. In the previous example, Elasticsearch will automatically create the customer index if it didn't already exist beforehand.
+Важным замечением является то, что Elasticsearch не требует от вас сперва явно создать индекс перед тем как вы будете индексировать документ в этот индекс. В предыдущем примере, Elasticsearch будет автоматически создавать индекс customer, если он уже не существовал до этого.
 
-Let's now retrieve that document that we just indexed:
+Теперь получим документ, который мы только что проиндексировали:
 
 [source,sh]
 --------------------------------------------------
 curl -XGET 'localhost:9200/customer/external/1?pretty'
 --------------------------------------------------
 
-And the response:
+ответ:
 
 [source,sh]
 --------------------------------------------------
@@ -330,11 +338,12 @@ curl -XGET 'localhost:9200/customer/external/1?pretty'
 }
 --------------------------------------------------
 
-Nothing out of the ordinary here other than a field, `found`, stating that we found a document with the requested ID 1 and another field, `_source`, which returns the full JSON document that we indexed from the previous step.
+Ничего неординарного тут нет, кроме поля `found`, в котором говорится, что найден документ с запрошенным ID 1 и другое поле, `_source`, которое возвращает полный документ в формате JSON, который мы проиндексировали на предыдущем шаге.
 
-=== Delete an Index
+[[_delete_an_index]]
+=== Удаление индекса
 
-Now let's delete the index that we just created and then list all the indexes again:
+Теперь удалим индекс, который мы только что создали и снова получим список всех индексов:
 
 [source,sh]
 --------------------------------------------------
@@ -342,7 +351,7 @@ curl -XDELETE 'localhost:9200/customer?pretty'
 curl 'localhost:9200/_cat/indices?v'
 --------------------------------------------------
 
-And the response:
+ответ:
 
 [source,sh]
 --------------------------------------------------
@@ -354,9 +363,9 @@ curl 'localhost:9200/_cat/indices?v'
 health index pri rep docs.count docs.deleted store.size pri.store.size
 --------------------------------------------------
 
-Which means that the index was deleted successfully and we are now back to where we started with nothing in our cluster.
+Что означает, что индекс успешно удалён и мы снова вернулись к началу, когда у нас не было ни одного индекса в кластере.
 
-Before we move on, let's take a closer look again at some of the API commands that we have learned so far:
+Перед тем как двигаться дальше, мы расскажем об API ещё нескольких команд:
 
 [source,sh]
 --------------------------------------------------
@@ -369,23 +378,25 @@ curl 'localhost:9200/customer/external/1'
 curl -XDELETE 'localhost:9200/customer'
 --------------------------------------------------
 
-If we study the above commands carefully, we can actually see a pattern of how we access data in Elasticsearch. That pattern can be summarized as follows:
+Если внимательно изучить вышеописанные команды, мы можем фактически увидеть образец того как получать доступ к данным в Elasticsearch. Этот образец в итоге выглядит так:
 
 [source,sh]
 --------------------------------------------------
 curl -X<REST Verb> <Node>:<Port>/<Index>/<Type>/<ID>
 --------------------------------------------------
 
-This REST access pattern is pervasive throughout all the API commands that if you can simply remember it, you will have a good head start at mastering Elasticsearch.
+Образец REST доступа распространяется на все команды API, так что если вы просто запомните его, это будет хорошим стартом в освоении Elasticsearch.
 
-== Modifying Your Data
 
-Elasticsearch provides data manipulation and search capabilities in near real time. By default, you can expect a one second delay (refresh interval) from the time you index/update/delete your data until the time that it appears in your search results. This is an important distinction from other platforms like SQL wherein data is immediately available after a transaction is completed.
+[[_modifying_your_data]]
+== Изменение ваших данных
+
+Elasticsearch предоставляет манипуляцию с данными и возможности поиска с временем, которое близко к реальному. По умолчанию, вы можете ожидать секундной задержки (интервал обновления) с момента, когда вы начали индексирование/обновление/удаление ваших данных до момента, когда всё это появится в результатах поиска. Это важное ограничение по сравнению с другими платформами, такими как SQL, где данные становятся немедленно доступными после завершения транзакции.
 
 [float]
-=== Indexing/Replacing Documents
+=== Индексирование/замена документов
 
-We've previously seen how we can index a single document. Let's recall that command again:
+Ранее мы увидели как можно проиндексировать одиночный документ. Давайте вызовем эту команду снова:
 
 [source,sh]
 --------------------------------------------------
@@ -395,7 +406,7 @@ curl -XPUT 'localhost:9200/customer/external/1?pretty' -d '
 }'
 --------------------------------------------------
 
-Again, the above will index the specified document into the customer index, external type, with the ID of 1. If we then executed the above command again with a different (or same) document, Elasticsearch will replace (i.e. reindex) a new document on top of the existing one with the ID of 1:
+Опять эта команда будет индксировать заданный документ в индекс customer, с типом external и ID равным 1. Если вы затем запустим эту команду снова с другим (или этим же) документом, Elasticsearch заменит (т.е. переиндексирует) новым документом существующий документ с ID равным 1:
 
 [source,sh]
 --------------------------------------------------
@@ -405,7 +416,7 @@ curl -XPUT 'localhost:9200/customer/external/1?pretty' -d '
 }'
 --------------------------------------------------
 
-The above changes the name of the document with the ID of 1 from "John Doe" to "Jane Doe". If, on the other hand, we use a different ID, a new document will be indexed and the existing document(s) already in the index remains untouched.
+Выше показано изменение имени документа с ID равным 1 с "John Doe" на "Jane Doe". Если, с другой стороны, мы используем другой ID, будет проиндексирован новый документ, а тот что уже находится в индексе, оставлен без изменений.
 
 [source,sh]
 --------------------------------------------------
@@ -415,11 +426,11 @@ curl -XPUT 'localhost:9200/customer/external/2?pretty' -d '
 }'
 --------------------------------------------------
 
-The above indexes a new document with an ID of 2.
+Данная выше команда индексирует новый документ с ID равным 2.
 
-When indexing, the ID part is optional. If not specified, Elasticsearch will generate a random ID and then use it to index the document. The actual ID Elasticsearch generates (or whatever we specified explicitly in the previous examples) is returned as part of the index API call.
+При индексировании, ID часть является необязательной. Если она не задана, Elasticsearch будет генерировать случайный ID и затем использовать его для индексирования документа. Фактический ID, который генерирует Elasticsearch (или который мы указали явно в предыдущем примере), возвращается как часть вызова API индексирования.
 
-This example shows how to index a document without an explicit ID:
+Данный пример показывает как индексировать документ без явного указания ID:
 
 [source,sh]
 --------------------------------------------------
@@ -429,13 +440,15 @@ curl -XPOST 'localhost:9200/customer/external?pretty' -d '
 }'
 --------------------------------------------------
 
-Note that in the above case, we are using the POST verb instead of PUT since we didn't specify an ID.
+Обратите внимание, что в вышеуказанном случае, мы используем POST вместо PUT, так как мы не указали ID.
 
-=== Updating Documents
 
-In addition to being able to index and replace documents, we can also update documents. Note though that Elasticsearch does not actually do in-place updates under the hood. Whenever we do an update, Elasticsearch deletes the old document and then indexes a new document with the update applied to it in one shot.
+[[_updating_documents]]
+=== Обновление документов
 
-This example shows how to update our previous document (ID of 1) by changing the name field to "Jane Doe":
+В дополнение к индексированию и замене документов, мы также можем обновлять документы. Обратите внимание, что Elasticsearch фактически не может реализовать обновления как таковые. Всякий раз, когда мы делаем обновление, Elasticsearch удаляет старый документ и затем индексирует новый документ за один шаг.
+
+Данный пример показывает как обновить наш предыдущий документ (с ID равным 1), изменив в нём поле имени на "Jane Doe":
 
 [source,sh]
 --------------------------------------------------
@@ -445,7 +458,7 @@ curl -XPOST 'localhost:9200/customer/external/1/_update?pretty' -d '
 }'
 --------------------------------------------------
 
-This example shows how to update our previous document (ID of 1) by changing the name field to "Jane Doe" and at the same time add an age field to it:
+Данный пример показывает как обновить наш предыдущий документ (с ID равным 1), изменив поле именим на "Jane Doe" и в это же время добавить к документу поле возраста:
 
 [source,sh]
 --------------------------------------------------
@@ -455,7 +468,7 @@ curl -XPOST 'localhost:9200/customer/external/1/_update?pretty' -d '
 }'
 --------------------------------------------------
 
-Updates can also be performed by using simple scripts. Note that dynamic scripts like the following are disabled by default as of `1.4.3`, have a look at the <<modules-scripting,scripting docs>> for more details. This example uses a script to increment the age by 5:
+Обновления также могут быть выполнены с помощью простых скриптов. Обратите внимание, что динамические скрипты по умолчанию выключены с версии `1.4.3`, см. подробности в <<modules-scripting,scripting docs>>. Данный пример использует скрипт для увеличения возраста на 5:
 
 [source,sh]
 --------------------------------------------------
@@ -465,26 +478,28 @@ curl -XPOST 'localhost:9200/customer/external/1/_update?pretty' -d '
 }'
 --------------------------------------------------
 
-In the above example, `ctx._source` refers to the current source document that is about to be updated.
+В вышеприведённом примере, `ctx._source` указывает на исходный текущий документ, который мы обновили выше.
 
-Note that as of this writing, updates can only be performed on a single document at a time. In the future, Elasticsearch might provide the ability to update multiple documents given a query condition (like an `SQL UPDATE-WHERE` statement).
+Обратите внимание, что обновления могут быть выполнены в один момент времени только для одного документа. В будущем, Elasticsearch будет предоставлять возможность обновить несколько документов, предоставляя условия запроса (как в SQL операторе `UPDATE-WHERE`).
 
-=== Deleting Documents
+[[_deleting_documents]]
+=== Удаление документов
 
-Deleting a document is fairly straightforward. This example shows how to delete our previous customer with the ID of 2:
+Удаление документа столь же просто. Данный пример показывает как удалить наш предыдущий документ с ID равным 2:
 
 [source,sh]
 --------------------------------------------------
 curl -XDELETE 'localhost:9200/customer/external/2?pretty'
 --------------------------------------------------
 
-The `delete-by-query` plugin can delete all documents matching a specific query.
+Плагин `delete-by-query` может удалить все документы, совпадающие с определённым запросом.
 
-=== Batch Processing
+[[_batch_processing]]
+=== Пакетная обработка
 
-In addition to being able to index, update, and delete individual documents, Elasticsearch also provides the ability to perform any of the above operations in batches using the <<docs-bulk,`_bulk` API>>. This functionality is important in that it provides a very efficient mechanism to do multiple operations as fast as possible with as little network roundtrips as possible.
+В дополнение к индексированию, обновлению и удалению отдельных документов, Elasticsearch также предоставляет возможность выполнять любые вышеописанные операции в пакетом (массовом) режиме, используя <<docs-bulk,`_bulk` API>>. Данная функциональность важна тем, что она предоставляет очень эффективный механизм для выполнения множественных операций так быстро, как это только возможно, с минимально возможной пересылкой данных по сети в обе стороны.
 
-As a quick example, the following call indexes two documents (ID 1 - John Doe and ID 2 - Jane Doe) in one bulk operation:
+В качестве быстрого примера, следующий вызов индексирует два документа (ID 1 - John Doe и ID 2 - Jane Doe) одной массовой операцией:
 
 [source,sh]
 --------------------------------------------------
@@ -496,7 +511,7 @@ curl -XPOST 'localhost:9200/customer/external/_bulk?pretty' -d '
 '
 --------------------------------------------------
 
-This example updates the first document (ID of 1) and then deletes the second document (ID of 2) in one bulk operation:
+Данный пример обновляет первый документ (с ID равным 1) и затем удаляет второй документ (с ID равным 2) в одной массовой операции:
 
 [source,sh]
 --------------------------------------------------
@@ -507,16 +522,17 @@ curl -XPOST 'localhost:9200/customer/external/_bulk?pretty' -d '
 '
 --------------------------------------------------
 
-Note above that for the delete action, there is no corresponding source document after it since deletes only require the ID of the document to be deleted.
+Обратите внимание, что для действия удаления не указан соответствующий исходный документ, потому что удаление требует только ID удаляемого документа.
 
-The bulk API executes all the actions sequentially and in order. If a single action fails for whatever reason, it will continue to process the remainder of the actions after it. When the bulk API returns, it will provide a status for each action (in the same order it was sent in) so that you can check if a specific action failed or not.
+API массовых операций выполняет все действия последовательно и по порядку. Если одно действие завершилось неудачей по какой-либо причине, оставшиеся действия после него продолжат выполняться. Когда происходит возврат из API массовой операции, будет предоставлен статус каждой операции (в том же порядке, в каком шли операции), так что вы можете проверить удачным было указанное действие или нет.
 
-== Exploring Your Data
+[[_exploring_your_data]]
+== Исследование ваших данных
 
 [float]
-=== Sample Dataset
+=== Простой набор данных
 
-Now that we've gotten a glimpse of the basics, let's try to work on a more realistic dataset. I've prepared a sample of fictitious JSON documents of customer bank account information. Each document has the following schema:
+Теперь, когда мы ознакомились с основами, попытаемся поработать с более реалистичным набором данных. Я подготовил набор JSON документов с инофрмацией о клиентах банка. Каждый документ имеет следующую схему:
 
 [source,sh]
 --------------------------------------------------
@@ -535,12 +551,12 @@ Now that we've gotten a glimpse of the basics, let's try to work on a more reali
 }
 --------------------------------------------------
 
-For the curious, I generated this data from http://www.json-generator.com/[`www.json-generator.com/`] so please ignore the actual values and semantics of the data as these are all randomly generated.
+Для любопытствующих, я сгенерировал эти данных на http://www.json-generator.com/[`www.json-generator.com/`] так что, пожалуйста, игнорируйте значения и смысл данных, так как все они случайно сгенерированы.
 
 [float]
-=== Loading the Sample Dataset
+=== Загрузка набора данных
 
-You can download the sample dataset (accounts.json) from https://github.com/bly2k/files/blob/master/accounts.zip?raw=true[here]. Extract it to our current directory and let's load it into our cluster as follows:
+Вы можете загрузить этот набор данных (accounts.json) https://github.com/bly2k/files/blob/master/accounts.zip?raw=true[отсюда]. Извлеките содержимое архива в текущий каталог и затем загрузите его в кластер:
 
 [source,sh]
 --------------------------------------------------
@@ -548,7 +564,7 @@ curl -XPOST 'localhost:9200/bank/account/_bulk?pretty' --data-binary "@accounts.
 curl 'localhost:9200/_cat/indices?v'
 --------------------------------------------------
 
-And the response:
+ответ:
 
 [source,sh]
 --------------------------------------------------
@@ -557,22 +573,23 @@ health index pri rep docs.count docs.deleted store.size pri.store.size
 yellow bank    5   1       1000            0    424.4kb        424.4kb
 --------------------------------------------------
 
-Which means that we just successfully bulk indexed 1000 documents into the bank index (under the account type).
+означает, что мы успешно выполнили массовое индексирование 1000 документов в индекс с именем bank (и типом account).
 
-=== The Search API
+[[_the_search_api]]
+=== API поиска
 
-Now let's start with some simple searches. There are two basic ways to run searches: one is by sending search parameters through the <<search-uri-request,REST request URI>> and the other by sending them through the <<search-request-body,REST request body>>. The request body method allows you to be more expressive and also to define your searches in a more readable JSON format. We'll try one example of the request URI method but for the remainder of this tutorial, we will exclusively be using the request body method.
+Теперь выполним несколько простых поисков. Есть два базовых способа запустить поиск: один состоит в отправке параметров поиска через <<search-uri-request,URI REST запроса>>, а другой через отправку этих же параметров через <<search-request-body,тело REST запроса>>. Метод запроса через тело, позволяет вам большую выразительность, а также определяет параметры поиска в более читабельном для человека JSON формате. Мы попытаемся выполнить один пример с помощью метода URI, но далее мы будем использовать исключительно метод с телом запроса.
 
-The REST API for search is accessible from the `_search` endpoint. This example returns all documents in the bank index:
+REST API поиска доступно через указание `_search`. Данный пример, вернёт все документы в индексе bank:
 
 [source,sh]
 --------------------------------------------------
 curl 'localhost:9200/bank/_search?q=*&pretty'
 --------------------------------------------------
 
-Let's first dissect the search call. We are searching (`_search` endpoint) in the bank index, and the `q=*` parameter instructs Elasticsearch to match all documents in the index. The `pretty` parameter, again, just tells Elasticsearch to return pretty-printed JSON results.
+Давайте сперва проанализируем вызов поиска. Мы ищем (указываем `_search`) в индексе bank и параметр `q=*` инструктирует Elasticsearch искать совпадение со всеми документами в индексе. Параметр `pretty`, снова, просто говорит Elasticsearch возвращать результаты в виде читаемого человеком JSON.
 
-And the response (partially shown):
+И ответ (показан частично):
 
 [source,sh]
 --------------------------------------------------
@@ -603,17 +620,17 @@ curl 'localhost:9200/bank/_search?q=*&pretty'
       "_type" : "account",
 --------------------------------------------------
 
-As for the response, we see the following parts:
+В ответе, мы видим следующие части:
 
-* `took` – time in milliseconds for Elasticsearch to execute the search
-* `timed_out` – tells us if the search timed out or not
-* `_shards` – tells us how many shards were searched, as well as a count of the successful/failed searched shards
-* `hits` – search results
-* `hits.total` – total number of documents matching our search criteria
-* `hits.hits` – actual array of search results (defaults to first 10 documents)
-* `_score` and `max_score` - ignore these fields for now
+* `took` – время в миллисекундах, которое Elasticsearch выполнял запрос
+* `timed_out` – говорит там, произошёл ли таймаут поиска или нет
+* `_shards` – говорит сколько шардов участвовало в поиске, а также количество шардов поиск по которым был успешным/неуспешным
+* `hits` – количество совпадений с результатами поиска
+* `hits.total` – общее количетсво документов, совпавшее с критериями поиска
+* `hits.hits` – фактический массив результатов поиска (по умолчанию первые 10 документов)
+* `_score` и `max_score` - пока игнорируем эти поля
 
-Here is the same exact search above using the alternative request body method:
+Здесь точно тот же поиск, что и выше, но с использованием альтернативного метода с телом запроса:
 
 [source,sh]
 --------------------------------------------------
@@ -623,9 +640,9 @@ curl -XPOST 'localhost:9200/bank/_search?pretty' -d '
 }'
 --------------------------------------------------
 
-The difference here is that instead of passing `q=*` in the URI, we POST a JSON-style query request body to the `_search` API. We'll discuss this JSON query in the next section.
+Разница здесь в том, что вместо указания `q=*` в URI, мы выполняем POST запрос с JSON в теле запроса для `_search` API. Мы расскажем о JSON запросах в следующем разделе.
 
-And the response (partially shown):
+И ответ (показан частично):
 
 [source,sh]
 --------------------------------------------------
@@ -660,13 +677,15 @@ curl -XPOST 'localhost:9200/bank/_search?pretty' -d '
       "_id" : "13",
 --------------------------------------------------
 
-It is important to understand that once you get your search results back, Elasticsearch is completely done with the request and does not maintain any kind of server-side resources or open cursors into your results. This is in stark contrast to many other platforms such as SQL wherein you may initially get a partial subset of your query results up-front and then you have to continuously go back to the server if you want to fetch (or page through) the rest of the results using some kind of stateful server-side cursor.
+Важно понимать, что как только вы получили результаты запроса, Elasticsearch полностью выполнил запрос и больше не поддерживает никакие виды ресурсов или открытые курсоры на сервере в ваших результатах. Это резко отличается от многих других платформ, таких как SQL, где вы можете изначально получить частичное подмножество результатов запроса, а затем вы должны постоянно возвращаться к серверу, если вы хотите, получить остаток или следующую страницу результатов, используя своего рода состояние курсора на стороне сервера.
 
-=== Introducing the Query Language
 
-Elasticsearch provides a JSON-style domain-specific language that you can use to execute queries. This is referred to as the <<query-dsl,Query DSL>>. The query language is quite comprehensive and can be intimidating at first glance but the best way to actually learn it is to start with a few basic examples.
+[[_introducing_the_query_language]]
+=== Введение в язык запросов
 
-Going back to our last example, we executed this query:
+Elasticsearch предоставляет доменно-специфичный язык в стиле JSON, который вы можете использовать для выполнения запросов. Он называется <<query-dsl,Query DSL>>. Язык запросов является довольно всесторонним и может быть пугающим на первый взгляд, но лучший способ на самом деле узнать его - начать с нескольких базовых примеров.
+
+Вернёмся назад к последнему нашему примеру, мы выполнили запрос:
 
 [source,sh]
 --------------------------------------------------
@@ -675,9 +694,9 @@ Going back to our last example, we executed this query:
 }
 --------------------------------------------------
 
-Dissecting the above, the `query` part tells us what our query definition is and the `match_all` part is simply the type of query that we want to run. The `match_all` query is simply a search for all documents in the specified index.
+как показано выше, часть запроса `query` говорит нам об определении собственно запроса, а часть `match_all` - это просто тип запроса, который мы хотим выполнить. Запрос `match_all` просто ищет все документы в указанном индексе.
 
-In addition to the `query` parameter, we also can pass other parameters to influence the search results. For example, the following does a `match_all` and returns only the first document:
+В дополнении к параметру `query`, мы также можем указать другие параметры, чтобы влиять на результаты поиска. Например, следующий запрос выполняет `match_all` и возвращает только первый документ:
 
 [source,sh]
 --------------------------------------------------
@@ -688,9 +707,9 @@ curl -XPOST 'localhost:9200/bank/_search?pretty' -d '
 }'
 --------------------------------------------------
 
-Note that if `size` is not specified, it defaults to 10.
+Обратите внимание, что если значение `size` не задано, по умолчанию оно составляет 10.
 
-This example does a `match_all` and returns documents 11 through 20:
+Данный пример выполняет `match_all` и возвращает документы с 11 по 20:
 
 [source,sh]
 --------------------------------------------------
@@ -702,9 +721,9 @@ curl -XPOST 'localhost:9200/bank/_search?pretty' -d '
 }'
 --------------------------------------------------
 
-The `from` parameter (0-based) specifies which document index to start from and the `size` parameter specifies how many documents to return starting at the from parameter. This feature is useful when implementing paging of search results. Note that if `from` is not specified, it defaults to 0.
+Параметр `from` задаёт с какого документа (начиная с 0-го) в индексе нужно начинать, а параметр `size` как много документов будет возвращено, начиная с параметра `from`. Данная особенность полезна для реализации пейджинга (разбиения на страницы) результатов поиска. Обратите внимание, что если `from` не указан, то его значение по умолчанию 0.
 
-This example does a `match_all` and sorts the results by account balance in descending order and returns the top 10 (default size) documents.
+Этот пример выполняет `match_all` и сортирует результаты по балансу учётной записи в обратном порядке и возвращает верхние 10 (по умолчанию) документов.
 
 [source,sh]
 --------------------------------------------------
@@ -715,11 +734,12 @@ curl -XPOST 'localhost:9200/bank/_search?pretty' -d '
 }'
 --------------------------------------------------
 
-=== Executing Searches
+[[_executing_searches]]
+=== Выполнение поиска
 
-Now that we have seen a few of the basic search parameters, let's dig in some more into the Query DSL. Let's first take a look at the returned document fields. By default, the full JSON document is returned as part of all searches. This is referred to as the source (`_source` field in the search hits). If we don't want the entire source document returned, we have the ability to request only a few fields from within source to be returned.
+Теперь, когда мы познакомились с несколькими базовыми параметрами поиска, давайте копать глубже внутрь Query DSL. Давайте сперва посмотрим на возвращаемые поля документа. По умолчанию, как часть всех поисковых запросов, возвращается полный JSON документ. Это называется исходным документом (поле `_source` в совпавших результатах). Если мы не хотим, чтобы возвращался весь исходный документ, мы имеем возможность запросить, чтобы из исходного документа возвращались только некоторые поля.
 
-This example shows how to return two fields, `account_number` and `balance` (inside of `_source`), from the search:
+Данный пример показывает как вернуть два поля, `account_number` и `balance` (вместо `_source`) при поиске:
 
 [source,sh]
 --------------------------------------------------
@@ -730,13 +750,13 @@ curl -XPOST 'localhost:9200/bank/_search?pretty' -d '
 }'
 --------------------------------------------------
 
-Note that the above example simply reduces the `_source` field. It will still only return one field named `_source` but within it, only the fields `account_number` and `balance` are included.
+Обратите внимание, что вышеприведённый пример просто уменьшает количество полей в `_source`. Он будет продолжать возвращать одно поле с именем `_source`, но в него будут включены только поля `account_number` и `balance`.
 
-If you come from a SQL background, the above is somewhat similar in concept to the `SQL SELECT FROM` field list.
+Если говорить о каком-то аналоге из SQL, то вышеописанный пример чем-то похож на `SQL SELECT FROM` список_полей.
 
-Now let's move on to the query part. Previously, we've seen how the `match_all` query is used to match all documents. Let's now introduce a new query called the <<query-dsl-match-query,`match` query>>, which can be thought of as a basic fielded search query (i.e. a search done against a specific field or set of fields).
+Теперь, давайте поработаем с частью `query`. Ранее, мы увидели как использовать `match_all` для поиска совпадение по всем документов. Теперь давайте познакомимся с новым запросом, который называется <<query-dsl-match-query,`match` запросом>> и который может осуществлять базовый поиск по полям (т.е. поиск выполняется по заданному полю или списку полей).
 
-This example returns the account numbered 20:
+Данный пример возвращает учётную запись пользователя с номером учётной записи 20:
 
 [source,sh]
 --------------------------------------------------
@@ -746,7 +766,7 @@ curl -XPOST 'localhost:9200/bank/_search?pretty' -d '
 }'
 --------------------------------------------------
 
-This example returns all accounts containing the term "mill" in the address:
+Данный пример возвращает все учётные записи, которые содержат термин (видимо имеется в виду подстрока – прим. пер.) "mill" в поле address:
 
 [source,sh]
 --------------------------------------------------
@@ -756,7 +776,7 @@ curl -XPOST 'localhost:9200/bank/_search?pretty' -d '
 }'
 --------------------------------------------------
 
-This example returns all accounts containing the term "mill" or "lane" in the address:
+Данный пример возвращает все учётные записи, содержащие в поле address термин "mill" или термин "lane":
 
 [source,sh]
 --------------------------------------------------
@@ -766,7 +786,7 @@ curl -XPOST 'localhost:9200/bank/_search?pretty' -d '
 }'
 --------------------------------------------------
 
-This example is a variant of `match` (`match_phrase`) that returns all accounts containing the phrase "mill lane" in the address:
+Данный пример является вариантом `match` (`match_phrase`), который возвращает все учётные записи, содержащие в поле address фразу "mill lane":
 
 [source,sh]
 --------------------------------------------------
@@ -776,9 +796,9 @@ curl -XPOST 'localhost:9200/bank/_search?pretty' -d '
 }'
 --------------------------------------------------
 
-Let's now introduce the <<query-dsl-bool-query,`bool`(ean) query>>. The `bool` query allows us to compose smaller queries into bigger queries using boolean logic.
+Теперь давайте познакомимся с <<query-dsl-bool-query, `логическим` (`bool`(ean)) запросом>>. Запрос `bool` позволяет нам составлять более компактные запросы в более больших запросах, используя булеву логику.
 
-This example composes two `match` queries and returns all accounts containing "mill" and "lane" in the address:
+Данный пример составляет два запроса `match` и возвращает все учётные записи, содержащие в поле address "mill" и "lane":
 
 [source,sh]
 --------------------------------------------------
@@ -795,9 +815,9 @@ curl -XPOST 'localhost:9200/bank/_search?pretty' -d '
 }'
 --------------------------------------------------
 
-In the above example, the `bool must` clause specifies all the queries that must be true for a document to be considered a match.
+В вышеприведённом примере, предложение `bool must` задаёт все запросы, которые должны иметь значение истина (true) для документа, который был выбран по критерию` match`.
 
-In contrast, this example composes two `match` queries and returns all accounts containing "mill" or "lane" in the address:
+Для контраста, данный пример составляет два запроса `match` и возвращает все учётные записи содержащие в поле address "mill" или "lane":
 
 [source,sh]
 --------------------------------------------------
@@ -814,9 +834,9 @@ curl -XPOST 'localhost:9200/bank/_search?pretty' -d '
 }'
 --------------------------------------------------
 
-In the above example, the `bool should` clause specifies a list of queries either of which must be true for a document to be considered a match.
+В вышеприведённом примере, предложение `bool should` задаёт список запросов, любой из которых должен иметь значение истина (true) для документа, который был выбран по критерию `match`.
 
-This example composes two `match` queries and returns all accounts that contain neither "mill" nor "lane" in the address:
+Данный пример составляет два `match` запроса и возвращает все учётные записи, которые не содержат в поле address ни "mill", ни "lane":
 
 [source,sh]
 --------------------------------------------------
@@ -833,11 +853,11 @@ curl -XPOST 'localhost:9200/bank/_search?pretty' -d '
 }'
 --------------------------------------------------
 
-In the above example, the `bool must_not` clause specifies a list of queries none of which must be true for a document to be considered a match.
+В вышеприведённом примере, предложение `bool must_not` задаёт список запросов ни один из которые не должен иметь значение истина (true) для документа, который был выбран по критерию `match`.
 
-We can combine `must`, `should`, and `must_not` clauses simultaneously inside a `bool` query. Furthermore, we can compose `bool` queries inside any of these `bool` clauses to mimic any complex multi-level boolean logic.
+Мы можем одновременно комбинировать предложения `must`, `should` и `must_not` внутри запроса `bool`. Таким образом, мы можем составлять `bool` запросы внутри любого из этих `bool` предложений для составления сложных многоуровневых логических запросов.
 
-This example returns all accounts of anybody who is 40 years old but don't live in ID(aho):
+Данный пример возвращает все учётные записи для всякого, кто старше 40 лет, но не проживает в штате Айдахо (аббревиатуа ID – Айдахо, прим. пер.):
 
 [source,sh]
 --------------------------------------------------
@@ -856,15 +876,16 @@ curl -XPOST 'localhost:9200/bank/_search?pretty' -d '
 }'
 --------------------------------------------------
 
-=== Executing Filters
+[[_executing_filters]]
+=== Выполнение фильтрации
 
-In the previous section, we skipped over a little detail called the document score (`_score` field in the search results). The score is a numeric value that is a relative measure of how well the document matches the search query that we specified. The higher the score, the more relevant the document is, the lower the score, the less relevant the document is.
+В предыдущем разделе, мы пропустили маленькую подробность, которая называется оценкой документа (поле `_score` в результатах поиска). Оценка - это числовое значение, которое является относительной мерой того, насколько документ совпадает с поисковым запросом, который мы создали. Большие значения оценки показывают более релевантные (более полно совпадающие) документы, меньшие значение - менее релевантные.
 
-But queries do not always need to produce scores, in particular when they are only used for "filtering" the document set. Elasticsearch detects these situations and automatically optimizes query execution in order not to compute useless scores.
+Но запросам не всегда нужно генерировать оценки, в особенности, когда они используются только для "фильтрации" списка документов. Elasticsearch определяет такие ситуации и автоматически оптимизирует выполнение запроса так, чтобы он не вычислял оценки.
 
-The <<query-dsl-bool-query,`bool` query>> that we introduced in the previous section also supports `filter` clauses which allow to use a query to restrict the documents that will be matched by other clauses, without changing how scores are computed. As an example, let's introduce the <<query-dsl-range-query,`range` query>>, which allows us to filter documents by a range of values. This is generally used for numeric or date filtering.
+<<query-dsl-bool-query, `bool` запрос>> который мы рассматривали в предыдущей секции, также поддерживает выражения `filter`, которые позволяю использовать запрос для того, чтобы ограничить количество документов, с которыми будет совпадение по другим предложениям, без изменения вычисления оценок. В качестве примера, давайте познакомимся с <<query-dsl-range-query,`range` запросом>>, который позволяет нам отфильтровать документы по диапазону значений. Обычно это фильтрация чисел или дат.
 
-This example uses a bool query to return all accounts with balances between 20000 and 30000, inclusive. In other words, we want to find accounts with a balance that is greater than or equal to 20000 and less than or equal to 30000.
+Данный пример использует `bool` запрос для возврата всех учётных записей, значение поля balance которых находится между 20000 и 30000, включительно. Другими словами, мы хотим найти учётные записи с балансом который больше или равен 20000 и меньше или равен 30000.
 
 [source,sh]
 --------------------------------------------------
@@ -886,15 +907,16 @@ curl -XPOST 'localhost:9200/bank/_search?pretty' -d '
 }'
 --------------------------------------------------
 
-Dissecting the above, the bool query contains a `match_all` query (the query part) and a `range` query (the filter part). We can substitute any other queries into the query and the filter parts. In the above case, the range query makes perfect sense since documents falling into the range all match "equally", i.e., no document is more relevant than another.
+Как показанно выше, `bool` запрос содержит часть запроса `match_all` и часть запроса `range` (как `filter` часть). Вы можете подставить любые другие запросы в query и filter части. В примере выше, часть запроса `range` имеет смысл, потому что документы попадающие в дипазон range все являются 100% попаданием, т.е. нет одних документов, которые более релевантные, чем другие.
 
-In addition to the `match_all`, `match`, `bool`, and `range` queries, there are a lot of other query types that are available and we won't go into them here. Since we already have a basic understanding of how they work, it shouldn't be too difficult to apply this knowledge in learning and experimenting with the other query types.
+В дополнение к `match_all`, `match`, `bool` и `range` запросам, есть большое количество запросов других типов, но мы не будем говорить о них здесь. Поскольку мы уже имеем базовое понимание того, как это работает, это не должно быть слишком сложным для вас: применить эти знания в обучении и экспериментировании с другими типами запросов.
 
-=== Executing Aggregations
+[[_executing_aggregations]]
+=== Выполнение агрегаций
 
-Aggregations provide the ability to group and extract statistics from your data. The easiest way to think about aggregations is by roughly equating it to the SQL GROUP BY and the SQL aggregate functions. In Elasticsearch, you have the ability to execute searches returning hits and at the same time return aggregated results separate from the hits all in one response. This is very powerful and efficient in the sense that you can run queries and multiple aggregations and get the results back of both (or either) operations in one shot avoiding network roundtrips using a concise and simplified API.
+Агрегации предоставляют возможность группировки и извлечения статистистики из ваших данных. Наиболее лёгкий способ понять агрегации - это провести аналогию с SQL `GROUP BY` и агрегатными функциями SQL. В Elasticsearch у вас есть возможность выполнить поиск, возвращающий в одном и том же запросе совпавшие документы и в то же время возвращающий результаты агрегации, отдельно от совпавших документов. Это очень эффективно и мощно, в том смысле, что вы можете запускать запросы и множественные агрегации и получать результаты обоих (или одной) операций за один шаг, избегая лишней передачи данных по сети, используя краткий и простой API.
 
-To start with, this example groups all the accounts by state, and then returns the top 10 (default) states sorted by count descending (also default):
+Для начала, данный пример группирует все учётные записи по штату проживания и затем возвращает десять первых штатов, отсортированные по количеству учётных записей в них в обратном порядке (также по умолчанию):
 
 [source,sh]
 --------------------------------------------------
@@ -911,14 +933,14 @@ curl -XPOST 'localhost:9200/bank/_search?pretty' -d '
 }'
 --------------------------------------------------
 
-In SQL, the above aggregation is similar in concept to:
+В SQL, вышеприведённая агрегация по смыслу походит на запрос:
 
 [source,sh]
 --------------------------------------------------
 SELECT state, COUNT(*) FROM bank GROUP BY state ORDER BY COUNT(*) DESC
 --------------------------------------------------
 
-And the response (partially shown):
+ответ (показан частично):
 
 [source,sh]
 --------------------------------------------------
@@ -965,11 +987,11 @@ And the response (partially shown):
 }
 --------------------------------------------------
 
-We can see that there are 21 accounts in AL(abama), followed by 17 accounts in TX, followed by 15 accounts in ID(aho), and so forth.
+Вы можете увидеть, что здесь 21 учётная запись в AL (Алабаме), за которой следует 17 учётных записей в TX (Техас), за которой следует 15 учётных записей в ID (Айдахо) и так далее.
 
-Note that we set `size=0` to not show search hits because we only want to see the aggregation results in the response.
+Обратите внимание, что мы установили `size=0`, чтобы не показывать совпавшие документы, потому что мы хотим видеть в ответе только результаты агрегации.
 
-Building on the previous aggregation, this example calculates the average account balance by state (again only for the top 10 states sorted by count in descending order):
+В отличии от предыдущей агрегации, данный пример вычисляет средний баланс учётной записи по штату (в отличие от первых 10 штатов, отсортированных по количеству учётных записей в обратном порядке):
 
 [source,sh]
 --------------------------------------------------
@@ -993,9 +1015,9 @@ curl -XPOST 'localhost:9200/bank/_search?pretty' -d '
 }'
 --------------------------------------------------
 
-Notice how we nested the `average_balance` aggregation inside the `group_by_state` aggregation. This is a common pattern for all the aggregations. You can nest aggregations inside aggregations arbitrarily to extract pivoted summarizations that you require from your data.
+Обратите внимание как мы вложили агрегацию `average_balance` внутрь агрегации `group_by_state`. Это общий образец для всех агрегаций. Вы можете произвольно вкладывать агрегации внутрь агрегаций для извлечения нужной степени получения итогов, которая нам требуются от наших данных.
 
-Building on the previous aggregation, let's now sort on the average balance in descending order:
+В отличии от предыдущей агрегации, давайте теперь отсортируем средний баланс в обратном порядке:
 
 [source,sh]
 --------------------------------------------------
@@ -1022,7 +1044,7 @@ curl -XPOST 'localhost:9200/bank/_search?pretty' -d '
 }'
 --------------------------------------------------
 
-This example demonstrates how we can group by age brackets (ages 20-29, 30-39, and 40-49), then by gender, and then finally get the average account balance, per age bracket, per gender:
+Данный пример демонстрирует как мы можем группировать возрастные ограничения с помощью квадратных скобкок (20-29, 30-29 и 40-49), затем по полу и наконец затем получить средний баланс учётной записи по кажому диапазону возраста, по полу:
 
 [source,sh]
 --------------------------------------------------
@@ -1067,9 +1089,10 @@ curl -XPOST 'localhost:9200/bank/_search?pretty' -d '
 }'
 --------------------------------------------------
 
-There are a many other aggregations capabilities that we won't go into detail here. The <<search-aggregations,aggregations reference guide>> is a great starting point if you want to do further experimentation.
+Есть множество других возможностей агрегации, которые мы не будет подробно рассматривать здесь. <<search-aggregations, Справочное руководство по агрегациям>> является отличной точкой старта, если вы хотите больше экспериментов.
 
-== Conclusion
+[[_conclusion]]
+== Заключение
 
-Elasticsearch is both a simple and complex product. We've so far learned the basics of what it is, how to look inside of it, and how to work with it using some of the REST APIs. I hope that this tutorial has given you a better understanding of what Elasticsearch is and more importantly, inspired you to further experiment with the rest of its great features!
+Elasticsearch - это одновременно простой и сложный продукт. До этого момента мы постигали азы, что это такое, как смотреть внутрь него, и как с ним работать, используя некоторые функции REST API. Я надеюсь, что этот урок дал вам лучшее понимание, что такое Elasticsearch и что более важно, вдохновило вас на дальнейшее эксперименты с остальными из его огромных возможностей!
 
