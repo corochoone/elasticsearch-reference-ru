@@ -1,0 +1,128 @@
+[[setup-repositories]]
+== Репозитории
+
+Для дистрибутивов, основанных на APT и YUM имеются соответствующие репозитории. Обратите внимание,
+что мы предоставляем только бинарные пакет, но не исходные пакеты, так как пакеты создаются как
+часть процесса сборки Elasticsearch.
+
+Чтобы избежать случайных обновлений, мы разместили версии с разными старшими номерами по отдельным
+URL. Для всех выпусков 2.x используется номер версии 2.x, для 3.x используется 3.x  и т.д.
+
+Для подписи всех пакетов, мы используем ключ PGP с номером https://pgp.mit.edu/pks/lookup?op=vindex&search=0xD27D666CD88E42B4[D88E42B4],
+Elasticsearch Signing Key, и отпечатком
+
+    4609 5ACC 8548 582C 1A26 99A9 D27D 666C D88E 42B4
+
+Ключ доступен на http://pgp.mit.edu.
+
+[float]
+=== APT
+
+Скачайте и установите открытый ключ цифровой подписи:
+
+[source,sh]
+--------------------------------------------------
+wget -qO - https://packages.elastic.co/GPG-KEY-elasticsearch | sudo apt-key add -
+--------------------------------------------------
+
+Добавьте следущие строки в ваш файл  +/etc/apt/sources.list.d/elasticsearch-{major-version}.list+ , чтобы подключить данный репозиторий:
+
+["source","sh",subs="attributes,callouts"]
+--------------------------------------------------
+echo "deb http://packages.elastic.co/elasticsearch/{major-version}/debian stable main" | sudo tee -a /etc/apt/sources.list.d/elasticsearch-{major-version}.list
+--------------------------------------------------
+
+[WARNING]
+==================================================
+Чтобы добавить репозиторий Elasticsearch, используйте метод `echo`, описанный выше. Не используйте
+use add-apt-repository, так как эта команда добавит также запись `deb-src`, но мы не предоставляем
+пакет с исходными текстами. Если вы добавите `deb-src` запись, вы увидите ошибку следующего вида:
+
+    Unable to find expected entry 'main/source/Sources' in Release file (Wrong sources.list entry or malformed file)
+
+Просто удалите запись `deb-src` из файла `/etc/apt/sources.list` и установка будет работать так как ожидалось.
+==================================================
+
+Запустите `apt-get update` и резпозиторий станет доступным для использования. Вы можете сразу же произвести установку:
+
+[source,sh]
+--------------------------------------------------
+sudo apt-get update && sudo apt-get install elasticsearch
+--------------------------------------------------
+
+[WARNING]
+==================================================
+Если существует две записи для одного и того же репозитория Elasticsearch, вы можете увидеть
+при `apt-get update` такую ошибку как:
+
+["literal",subs="attributes,callouts"]
+
+Duplicate sources.list entry http://packages.elastic.co/elasticsearch/{major-version}/debian/ ...`
+
+Проверьте +/etc/apt/sources.list.d/elasticsearch-{major-version}.list+ на наличие дублирующих записей в файлах `/etc/apt/sources.list.d/` и в `/etc/apt/sources.list`.
+==================================================
+
+Настройте Elasticsearch для автоматического запуска во время загрузки.
+Если вы используете SysV init, далее вам нужно запустить:
+
+[source,sh]
+--------------------------------------------------
+sudo update-rc.d elasticsearch defaults 95 10
+--------------------------------------------------
+
+В противном случае, если вы используете `systemd`:
+
+[source,sh]
+--------------------------------------------------
+sudo /bin/systemctl daemon-reload
+sudo /bin/systemctl enable elasticsearch.service
+--------------------------------------------------
+
+[float]
+=== YUM
+
+Скачайте и установите открытый ключ цифровой подписи:
+
+[source,sh]
+--------------------------------------------------
+rpm --import https://packages.elastic.co/GPG-KEY-elasticsearch
+--------------------------------------------------
+
+Добавьте в ваш каталог `/etc/yum.repos.d/` файл, с суффиксом
+`.repo`, например, `elasticsearch.repo`
+
+["source","sh",subs="attributes,callouts"]
+--------------------------------------------------
+[elasticsearch-{major-version}]
+name=Elasticsearch repository for {major-version} packages
+baseurl=http://packages.elastic.co/elasticsearch/{major-version}/centos
+gpgcheck=1
+gpgkey=http://packages.elastic.co/GPG-KEY-elasticsearch
+enabled=1
+--------------------------------------------------
+
+И ваш репозиторий готов к использованию. Вы можете произвести установку командой:
+
+[source,sh]
+--------------------------------------------------
+yum install elasticsearch
+--------------------------------------------------
+
+Настройте Elasticsearch для автоматического запуска при загрузке системы.
+Если ваш дистрибутив использует SysV init, то вам понадобится выполнить команду:
+
+WARNING: Наши репозитории не работают со старыми RPM-дистрибутивами, которые
+         используют RPM v3, такими как CentOS5.
+
+[source,sh]
+--------------------------------------------------
+chkconfig --add elasticsearch
+--------------------------------------------------
+
+В противном случае, если используется `systemd`:
+
+[source,sh]
+--------------------------------------------------
+sudo /bin/systemctl daemon-reload
+sudo /bin/systemctl enable elasticsearch.service
+--------------------------------------------------

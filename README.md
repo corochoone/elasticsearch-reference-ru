@@ -13,3 +13,5 @@ Russian translation of the Elastic Search Reference (Русский перево
 `./build_docs.pl --chunk=1 --doc ./docs.ru/reference/index.asciidoc --out ./html/ru/elasticsearch/reference/нужная_версия/`
 
 Далее в html/ru/elasticsearch/reference/**нужная_версия** должны появится файлы с русским текстом и вы можете читать их через браузер локально или выложить куда-либо на хостинг, но помните о том, что написано здесь: [Условия использования](https://github.com/elastic/docs/blob/master/README.asciidoc).
+
+Мыло для связи: corochoone[at]gmail[dot]dom
